@@ -1,0 +1,10 @@
+FROM ubuntu
+RUN apt-get update \ 
+    && apt-get install -y wget
+
+# RUN OCT_V=${OCTANT_VERSION:-0.16.1}
+RUN OCT_V=0.16.1
+
+RUN wget https://github.com/vmware-tanzu/octant/releases/download/v${OCT_V}/octant_${OCT_V}_Linux-64bit.tar.gz -O octant.tar.gz \
+    && tar -xzvf octant.tar.gz
+CMD OCTANT_LISTENER_ADDR=0.0.0.0:7777 octant_${OCT_V}_Linux-64bit/octant --kubeconfig /kube/config --disable-open-browser

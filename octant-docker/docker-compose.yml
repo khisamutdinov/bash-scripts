@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  octant: 
+    build: .
+    # image: shamansoft/octant:0.16.1
+    container_name: "oc8"
+    restart: always
+    ports: 
+      - "7777:7777"
+    volumes: 
+      - ~/.kube/config:/kube/config:ro

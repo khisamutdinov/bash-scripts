@@ -3,7 +3,7 @@ version: "3.8"
 services:
   octant: 
     build: .
-    # image: shamansoft/octant:0.16.1
+    # image: ghcr.io/khisamutdinov/octant:latest
     container_name: "oc8"
     restart: always
     ports: 

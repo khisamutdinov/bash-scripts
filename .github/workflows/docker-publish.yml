@@ -5,6 +5,7 @@ on:
     # Publish `master` as Docker `latest` image.
     paths: 
       - "octant-docker/**"
+      - ".github/workflows/**"
     branches:
       - master
 

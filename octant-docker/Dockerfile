@@ -2,7 +2,7 @@ FROM ubuntu:latest
 
 LABEL org.opencontainers.image.source https://github.com/khisamutdinov/bash-scripts
 ARG octant_version
-ENV octant_version=${octant_version:-0.16.2}
+ENV octant_version=${octant_version:-0.23.0}
 RUN \
     apt-get update && \ 
     apt-get install -y wget && \

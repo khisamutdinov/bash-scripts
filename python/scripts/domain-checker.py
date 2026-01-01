@@ -12,6 +12,7 @@ import dns.resolver
 import whois
 import argparse
 import sys
+import os
 from datetime import datetime
 
 def is_active_dns(domain):
@@ -43,20 +44,40 @@ def check_whois(domain):
 def main():
     parser = argparse.ArgumentParser(description="Bulk Domain Availability Checker (DNS + WHOIS)")
     parser.add_argument("input", help="Path to input text file (one domain per line)")
-    parser.add_argument("output", help="Path to save results (JSON format)")
+    parser.add_argument("output", nargs='?', default=None, help="Path to save results. If omitted, a unique timestamped file is created.")
     parser.add_argument("--delay", type=float, default=1.5, help="Seconds between WHOIS queries (default: 1.5)")
 
     args = parser.parse_args()
 
+    # --- 1. Refined Path Logic ---
+    input_path = os.path.abspath(args.input)
+    directory = os.path.dirname(input_path)
+    base_name = os.path.splitext(os.path.basename(input_path))[0]
+
+    if args.output:
+        # Scenario: User specified a file. OVERRIDE allowed.
+        output_path = os.path.abspath(args.output)
+    else:
+        # Scenario: Default name. Protect with timestamp if exists.
+        default_name = f"{base_name}-results.json"
+        output_path = os.path.join(directory, default_name)
+
+        if os.path.exists(output_path):
+            timestamp = int(time.time())
+            output_path = os.path.join(directory, f"{base_name}-results-{timestamp}.json")
+
+    # --- 2. Read Input File ---
     try:
-        with open(args.input, "r") as f:
+        with open(input_path, "r") as f:
             domains = [line.strip() for line in f if line.strip()]
     except FileNotFoundError:
         print(f"Error: Input file '{args.input}' not found.")
         sys.exit(1)
 
+    # --- 3. Process Domains ---
     all_results = []
-    print(f"Checking {len(domains)} domains. Outputting to {args.output}...")
+    available_count = 0
+    print(f"Checking {len(domains)} domains. Saving to: {os.path.basename(output_path)}")
 
     for domain in domains:
         print(f"  > {domain}...", end="\r")
@@ -67,12 +88,10 @@ def main():
             "details": {}
         }
 
-        # Step 1: DNS Check
         if is_active_dns(domain):
             result["status"] = "taken"
             result["details"] = {"method": "dns_resolution"}
         else:
-            # Step 2: WHOIS Check
             time.sleep(args.delay)
             whois_data = check_whois(domain)
             if whois_data["registered"]:
@@ -85,13 +104,16 @@ def main():
             else:
                 result["status"] = "available"
                 result["details"] = {"method": "whois_query"}
+                available_count += 1
 
         all_results.append(result)
 
-    with open(args.output, "w") as f:
+    # --- 4. Final Save ---
+    with open(output_path, "w") as f:
         json.dump(all_results, f, indent=4)
 
-    print(f"\nSuccess: Results saved to {args.output}")
+    print(f"\nFinished! Found {available_count} available domains.")
+    print(f"Full report: {output_path}")
 
 if __name__ == "__main__":
     main()

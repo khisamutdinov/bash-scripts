@@ -1,0 +1,10 @@
+[project]
+name = "bash-scripts-python"
+version = "0.1.0"
+description = "Python CLI tools for bash-scripts repository"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+greet = "scripts.greet:main"
+check-domains = "scripts.domain-checker:main"
